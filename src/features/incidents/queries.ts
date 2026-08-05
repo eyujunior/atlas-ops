@@ -4,8 +4,9 @@ import {
   useQuery,
   useQueryClient,
 } from "@tanstack/react-query";
+import { ApiClientError } from "@/lib/api-client";
 import { queryKeys } from "@/lib/query-keys";
-import type { Incident, IncidentNote, IncidentStatus } from "@/lib/types";
+import type { Incident, IncidentListResponse, IncidentNote, IncidentStatus } from "@/lib/types";
 import {
   addIncidentNote,
   createIncident,
@@ -14,11 +15,12 @@ import {
   updateIncidentAssignee,
   updateIncidentStatus,
   type CreateIncidentPayload,
+  type UpdateStatusResult,
 } from "./api";
 import type { IncidentListParams } from "./types";
 
 export function useIncidentsQuery(params: IncidentListParams) {
-  return useQuery({
+  return useQuery<IncidentListResponse, ApiClientError>({
     queryKey: queryKeys.incidents.list(params),
     queryFn: ({ signal }) => fetchIncidents(params, signal),
     // Keep showing the previous page's data while the next page loads,
@@ -28,7 +30,7 @@ export function useIncidentsQuery(params: IncidentListParams) {
 }
 
 export function useIncidentQuery(id: string) {
-  return useQuery({
+  return useQuery<Incident, ApiClientError>({
     queryKey: queryKeys.incidents.detail(id),
     queryFn: ({ signal }) => fetchIncident(id, signal),
     enabled: Boolean(id),
@@ -44,7 +46,7 @@ function invalidateIncidentLists(queryClient: ReturnType<typeof useQueryClient>)
 
 export function useCreateIncidentMutation() {
   const queryClient = useQueryClient();
-  return useMutation({
+  return useMutation<Incident, ApiClientError, CreateIncidentPayload>({
     mutationFn: (payload: CreateIncidentPayload) => createIncident(payload),
     onSuccess: () => {
       invalidateIncidentLists(queryClient);
@@ -56,9 +58,13 @@ export function useUpdateStatusMutation(id: string) {
   const queryClient = useQueryClient();
   const detailKey = queryKeys.incidents.detail(id);
 
-  return useMutation({
-    mutationFn: ({ status, version }: { status: IncidentStatus; version?: number }) =>
-      updateIncidentStatus(id, status, version),
+  return useMutation<
+    UpdateStatusResult,
+    ApiClientError,
+    { status: IncidentStatus; version?: number },
+    { previous?: Incident }
+  >({
+    mutationFn: ({ status, version }) => updateIncidentStatus(id, status, version),
     onMutate: async ({ status }) => {
       await queryClient.cancelQueries({ queryKey: detailKey });
       const previous = queryClient.getQueryData<Incident>(detailKey);
@@ -87,9 +93,13 @@ export function useUpdateAssigneeMutation(id: string) {
   const queryClient = useQueryClient();
   const detailKey = queryKeys.incidents.detail(id);
 
-  return useMutation({
-    mutationFn: ({ assigneeId }: { assigneeId: string | null; assigneeSnapshot?: Incident["assignee"] }) =>
-      updateIncidentAssignee(id, assigneeId),
+  return useMutation<
+    Incident,
+    ApiClientError,
+    { assigneeId: string | null; assigneeSnapshot?: Incident["assignee"] },
+    { previous?: Incident }
+  >({
+    mutationFn: ({ assigneeId }) => updateIncidentAssignee(id, assigneeId),
     onMutate: async ({ assigneeSnapshot }) => {
       await queryClient.cancelQueries({ queryKey: detailKey });
       const previous = queryClient.getQueryData<Incident>(detailKey);
@@ -118,9 +128,13 @@ export function useAddNoteMutation(id: string) {
   const queryClient = useQueryClient();
   const detailKey = queryKeys.incidents.detail(id);
 
-  return useMutation({
-    mutationFn: ({ message }: { message: string; optimisticId: string }) =>
-      addIncidentNote(id, message),
+  return useMutation<
+    IncidentNote,
+    ApiClientError,
+    { message: string; optimisticId: string },
+    { previous?: Incident }
+  >({
+    mutationFn: ({ message }) => addIncidentNote(id, message),
     onMutate: async ({ message, optimisticId }) => {
       await queryClient.cancelQueries({ queryKey: detailKey });
       const previous = queryClient.getQueryData<Incident>(detailKey);
