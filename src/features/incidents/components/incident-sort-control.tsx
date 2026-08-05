@@ -3,6 +3,7 @@
 import { ArrowDown, ArrowUp } from "lucide-react";
 import type { SortField, SortOrder } from "../types";
 import { FIELD_CLASS } from "./field-styles";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 const SORT_OPTIONS: { value: SortField; label: string }[] = [
   { value: "updatedAt", label: "Last updated" },
@@ -24,18 +25,18 @@ export function IncidentSortControl({
       <label htmlFor="sort-field" className="sr-only">
         Sort by
       </label>
-      <select
-        id="sort-field"
-        value={sort}
-        onChange={(e) => onChange(e.target.value as SortField, order)}
-        className={`${FIELD_CLASS} pl-2.5 pr-1`}
-      >
-        {SORT_OPTIONS.map((opt) => (
-          <option key={opt.value} value={opt.value}>
-            {opt.label}
-          </option>
-        ))}
-      </select>
+      <Select value={sort} onValueChange={(value) => onChange(value as SortField, order)}>
+        <SelectTrigger id="sort-field" className="w-38">
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent>
+          {SORT_OPTIONS.map((opt) => (
+            <SelectItem key={opt.value} value={opt.value}>
+              {opt.label}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
       <button
         type="button"
         onClick={() => onChange(sort, order === "asc" ? "desc" : "asc")}

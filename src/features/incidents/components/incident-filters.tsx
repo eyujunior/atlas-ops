@@ -3,7 +3,13 @@
 import { X } from "lucide-react";
 import { INCIDENT_SEVERITIES, INCIDENT_STATUSES, type IncidentSeverity, type IncidentStatus } from "@/lib/types";
 import { useServicesQuery } from "@/features/users/queries";
-import { FIELD_CLASS } from "./field-styles";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+
+// Radix Select reserves the empty string as an internal "no selection"
+// sentinel — an Item can't use value="". "All services" needs a real,
+// stable value distinct from any actual service name to round-trip
+// through that.
+const ALL_SERVICES_VALUE = "__all__";
 
 function FilterTag({ label, onRemove }: { label: string; onRemove: () => void }) {
   return (
@@ -43,25 +49,26 @@ function FilterDropdown<T extends string>({
       <label htmlFor={id} className="sr-only">
         {label}
       </label>
-      <select
-        id={id}
+      {/* value="" always: this is an "add one" control, not a persistent
+          selection — after adding, it resets to the placeholder rather
+          than showing the just-picked value (that value now lives as a
+          tag below). */}
+      <Select
         value=""
-        onChange={(e) => {
-          const value = e.target.value as T;
-          if (value) onAdd(value);
-        }}
+        onValueChange={(value) => onAdd(value as T)}
         disabled={available.length === 0}
-        className={`${FIELD_CLASS} pl-2.5 pr-1 disabled:cursor-not-allowed disabled:opacity-50`}
       >
-        <option value="" disabled>
-          {available.length === 0 ? "All added" : placeholder}
-        </option>
-        {available.map((option) => (
-          <option key={option} value={option}>
-            {option}
-          </option>
-        ))}
-      </select>
+        <SelectTrigger id={id} className="w-37">
+          <SelectValue placeholder={available.length === 0 ? "All added" : placeholder} />
+        </SelectTrigger>
+        <SelectContent>
+          {available.map((option) => (
+            <SelectItem key={option} value={option}>
+              {option}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
     </>
   );
 }
@@ -112,19 +119,22 @@ export function IncidentFilters({
         <label htmlFor="service-filter" className="sr-only">
           Service
         </label>
-        <select
-          id="service-filter"
-          value={service}
-          onChange={(e) => onServiceChange(e.target.value)}
-          className={`${FIELD_CLASS} pl-2.5 pr-1`}
+        <Select
+          value={service || ALL_SERVICES_VALUE}
+          onValueChange={(value) => onServiceChange(value === ALL_SERVICES_VALUE ? "" : value)}
         >
-          <option value="">All services</option>
-          {servicesQuery.data?.items.map((svc) => (
-            <option key={svc} value={svc}>
-              {svc}
-            </option>
-          ))}
-        </select>
+          <SelectTrigger id="service-filter" className="w-42">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value={ALL_SERVICES_VALUE}>All services</SelectItem>
+            {servicesQuery.data?.items.map((svc) => (
+              <SelectItem key={svc} value={svc}>
+                {svc}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
 
         {hasActiveFilters && (
           <button
