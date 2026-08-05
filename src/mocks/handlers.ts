@@ -139,7 +139,7 @@ export const handlers = [
           : "updatedAt",
       order: orderParam === "asc" ? "asc" : "desc",
       page: Number(url.searchParams.get("page") ?? "1") || 1,
-      pageSize: Number(url.searchParams.get("pageSize") ?? "25") || 25,
+      pageSize: Number(url.searchParams.get("pageSize") ?? "20") || 20,
     });
 
     return HttpResponse.json(result);

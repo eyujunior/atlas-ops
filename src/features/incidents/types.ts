@@ -22,5 +22,5 @@ export const DEFAULT_LIST_PARAMS: IncidentListParams = {
   sort: "updatedAt",
   order: "desc",
   page: 1,
-  pageSize: 25,
+  pageSize: 20,
 };

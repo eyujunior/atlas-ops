@@ -91,7 +91,7 @@ export function listIncidents(params: ListParams) {
   const sort = params.sort ?? "updatedAt";
   const order = params.order ?? "desc";
   const page = Math.max(1, params.page ?? 1);
-  const pageSize = Math.min(100, Math.max(1, params.pageSize ?? 25));
+  const pageSize = Math.min(100, Math.max(1, params.pageSize ?? 20));
 
   const filtered = Array.from(incidents.values()).filter((incident) =>
     matches(incident, params),
