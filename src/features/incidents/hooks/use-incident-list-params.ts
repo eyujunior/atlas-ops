@@ -1,7 +1,7 @@
 "use client";
 
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { useCallback, useMemo } from "react";
+import { useCallback, useEffect, useMemo, useRef } from "react";
 import {
   INCIDENT_SEVERITIES,
   INCIDENT_STATUSES,
@@ -88,16 +88,34 @@ export function useIncidentListParams() {
 
   const params = useMemo(() => parseListParams(searchParams), [searchParams]);
 
+  // Tracks the most recently *requested* params — not just the last
+  // committed URL. Next's router.push doesn't commit the URL (or
+  // window.location) synchronously, so if two setParams calls fire
+  // back-to-back (e.g. two filter selects clicked quickly) before the
+  // first navigation lands, both would compute their patch against the
+  // same stale snapshot and the second router.push would silently
+  // overwrite the first change instead of compounding on top of it.
+  // This ref advances optimistically inside setParams itself, so the
+  // second call always builds on the first regardless of navigation
+  // timing. It's resynced from the real URL only when that URL actually
+  // changes (effect below), so external navigation (back/forward) still
+  // wins over a stale ref once it lands.
+  const latestParamsRef = useRef(params);
+  useEffect(() => {
+    latestParamsRef.current = params;
+  }, [params]);
+
   const setParams = useCallback(
     (patch: Partial<IncidentListParams>) => {
-      const next: IncidentListParams = { ...params, ...patch };
+      const next: IncidentListParams = { ...latestParamsRef.current, ...patch };
       if (!("page" in patch)) {
         next.page = 1;
       }
+      latestParamsRef.current = next;
       const qs = serializeListParams(next);
       router.push(qs ? `${pathname}?${qs}` : pathname, { scroll: false });
     },
-    [params, pathname, router],
+    [pathname, router],
   );
 
   const clearFilter = useCallback(
