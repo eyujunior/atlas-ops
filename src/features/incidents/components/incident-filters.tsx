@@ -1,28 +1,67 @@
 "use client";
 
+import { X } from "lucide-react";
 import { INCIDENT_SEVERITIES, INCIDENT_STATUSES, type IncidentSeverity, type IncidentStatus } from "@/lib/types";
 import { useServicesQuery } from "@/features/users/queries";
 
-function toggle<T>(list: T[], value: T): T[] {
-  return list.includes(value) ? list.filter((v) => v !== value) : [...list, value];
+function FilterTag({ label, onRemove }: { label: string; onRemove: () => void }) {
+  return (
+    <span className="inline-flex items-center gap-1 rounded-full bg-blue-50 py-1 pl-2.5 pr-1 text-xs font-medium text-blue-700 ring-1 ring-inset ring-blue-600/20">
+      {label}
+      <button
+        type="button"
+        onClick={onRemove}
+        aria-label={`Remove ${label} filter`}
+        className="rounded-full p-0.5 hover:bg-blue-100 focus:outline-none focus-visible:outline-2 focus-visible:outline-blue-600"
+      >
+        <X aria-hidden="true" className="h-3 w-3" />
+      </button>
+    </span>
+  );
 }
 
-function TogglePill({
+function FilterDropdown<T extends string>({
+  id,
   label,
-  checked,
-  onChange,
+  placeholder,
+  options,
+  selected,
+  onAdd,
 }: {
+  id: string;
   label: string;
-  checked: boolean;
-  onChange: () => void;
+  placeholder: string;
+  options: readonly T[];
+  selected: T[];
+  onAdd: (value: T) => void;
 }) {
+  const available = options.filter((option) => !selected.includes(option));
+
   return (
-    <label className="cursor-pointer">
-      <input type="checkbox" className="peer sr-only" checked={checked} onChange={onChange} />
-      <span className="inline-flex items-center rounded-full border border-neutral-300 px-2.5 py-1 text-xs font-medium text-neutral-700 transition-colors peer-checked:border-blue-600 peer-checked:bg-blue-600 peer-checked:text-white peer-focus-visible:ring-2 peer-focus-visible:ring-blue-500/50 peer-focus-visible:ring-offset-1 hover:border-neutral-400">
+    <div className="flex flex-col gap-1">
+      <label htmlFor={id} className="text-xs font-medium text-neutral-500">
         {label}
-      </span>
-    </label>
+      </label>
+      <select
+        id={id}
+        value=""
+        onChange={(e) => {
+          const value = e.target.value as T;
+          if (value) onAdd(value);
+        }}
+        disabled={available.length === 0}
+        className="rounded-md border border-neutral-300 bg-white px-2 py-1 text-sm text-neutral-900 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/30 disabled:cursor-not-allowed disabled:opacity-50"
+      >
+        <option value="" disabled>
+          {available.length === 0 ? "All added" : placeholder}
+        </option>
+        {available.map((option) => (
+          <option key={option} value={option}>
+            {option}
+          </option>
+        ))}
+      </select>
+    </div>
   );
 }
 
@@ -46,60 +85,76 @@ export function IncidentFilters({
   onClearAll: () => void;
 }) {
   const servicesQuery = useServicesQuery();
+  const hasTags = status.length > 0 || severity.length > 0;
 
   return (
-    <div className="flex flex-wrap items-start gap-x-6 gap-y-3">
-      <fieldset className="flex flex-wrap items-center gap-1.5">
-        <legend className="mb-1 w-full text-xs font-medium text-neutral-500">Status</legend>
-        {INCIDENT_STATUSES.map((s) => (
-          <TogglePill
-            key={s}
-            label={s}
-            checked={status.includes(s)}
-            onChange={() => onStatusChange(toggle(status, s))}
-          />
-        ))}
-      </fieldset>
+    <div className="flex flex-col gap-3">
+      <div className="flex flex-wrap items-end gap-3">
+        <FilterDropdown
+          id="status-filter"
+          label="Status"
+          placeholder="Add status…"
+          options={INCIDENT_STATUSES}
+          selected={status}
+          onAdd={(value) => onStatusChange([...status, value])}
+        />
 
-      <fieldset className="flex flex-wrap items-center gap-1.5">
-        <legend className="mb-1 w-full text-xs font-medium text-neutral-500">Severity</legend>
-        {INCIDENT_SEVERITIES.map((s) => (
-          <TogglePill
-            key={s}
-            label={s}
-            checked={severity.includes(s)}
-            onChange={() => onSeverityChange(toggle(severity, s))}
-          />
-        ))}
-      </fieldset>
+        <FilterDropdown
+          id="severity-filter"
+          label="Severity"
+          placeholder="Add severity…"
+          options={INCIDENT_SEVERITIES}
+          selected={severity}
+          onAdd={(value) => onSeverityChange([...severity, value])}
+        />
 
-      <div className="flex flex-col gap-1">
-        <label htmlFor="service-filter" className="text-xs font-medium text-neutral-500">
-          Service
-        </label>
-        <select
-          id="service-filter"
-          value={service}
-          onChange={(e) => onServiceChange(e.target.value)}
-          className="rounded-md border border-neutral-300 bg-white px-2 py-1 text-sm text-neutral-900 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/30"
-        >
-          <option value="">All services</option>
-          {servicesQuery.data?.items.map((svc) => (
-            <option key={svc} value={svc}>
-              {svc}
-            </option>
-          ))}
-        </select>
+        <div className="flex flex-col gap-1">
+          <label htmlFor="service-filter" className="text-xs font-medium text-neutral-500">
+            Service
+          </label>
+          <select
+            id="service-filter"
+            value={service}
+            onChange={(e) => onServiceChange(e.target.value)}
+            className="rounded-md border border-neutral-300 bg-white px-2 py-1 text-sm text-neutral-900 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/30"
+          >
+            <option value="">All services</option>
+            {servicesQuery.data?.items.map((svc) => (
+              <option key={svc} value={svc}>
+                {svc}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        {hasActiveFilters && (
+          <button
+            type="button"
+            onClick={onClearAll}
+            className="rounded-md px-2 py-1.5 text-xs font-medium text-blue-700 hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-500/30"
+          >
+            Clear all filters
+          </button>
+        )}
       </div>
 
-      {hasActiveFilters && (
-        <button
-          type="button"
-          onClick={onClearAll}
-          className="self-end rounded-md px-2 py-1 text-xs font-medium text-blue-700 hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-500/30"
-        >
-          Clear all filters
-        </button>
+      {hasTags && (
+        <div className="flex flex-wrap items-center gap-1.5" aria-label="Active filters">
+          {status.map((s) => (
+            <FilterTag
+              key={`status-${s}`}
+              label={`Status: ${s}`}
+              onRemove={() => onStatusChange(status.filter((x) => x !== s))}
+            />
+          ))}
+          {severity.map((s) => (
+            <FilterTag
+              key={`severity-${s}`}
+              label={`Severity: ${s}`}
+              onRemove={() => onSeverityChange(severity.filter((x) => x !== s))}
+            />
+          ))}
+        </div>
       )}
     </div>
   );
