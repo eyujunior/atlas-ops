@@ -47,7 +47,9 @@ function parseCsv<T extends string>(
 }
 
 /** Applies simulated latency and header/random-driven failure injection. */
-async function simulateNetwork(request: Request): Promise<HttpResponse | null> {
+async function simulateNetwork(
+  request: Request,
+): Promise<HttpResponse<Record<string, unknown>> | null> {
   const forcedDelay = request.headers.get("X-Mock-Delay");
   const forcedFailure = request.headers.get("X-Mock-Failure");
   const forcedConflict = request.headers.get("X-Mock-Conflict") === "true";
@@ -91,7 +93,7 @@ async function simulateNetwork(request: Request): Promise<HttpResponse | null> {
   return null;
 }
 
-function errorResponse(error: unknown): HttpResponse {
+function errorResponse(error: unknown): HttpResponse<Record<string, unknown>> {
   if (error instanceof ApiError) {
     return HttpResponse.json(
       {
