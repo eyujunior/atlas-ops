@@ -3,6 +3,7 @@
 import { X } from "lucide-react";
 import { INCIDENT_SEVERITIES, INCIDENT_STATUSES, type IncidentSeverity, type IncidentStatus } from "@/lib/types";
 import { useServicesQuery } from "@/features/users/queries";
+import { FIELD_CLASS } from "./field-styles";
 
 function FilterTag({ label, onRemove }: { label: string; onRemove: () => void }) {
   return (
@@ -38,8 +39,8 @@ function FilterDropdown<T extends string>({
   const available = options.filter((option) => !selected.includes(option));
 
   return (
-    <div className="flex flex-col gap-1">
-      <label htmlFor={id} className="text-xs font-medium text-neutral-500">
+    <>
+      <label htmlFor={id} className="sr-only">
         {label}
       </label>
       <select
@@ -50,7 +51,7 @@ function FilterDropdown<T extends string>({
           if (value) onAdd(value);
         }}
         disabled={available.length === 0}
-        className="rounded-md border border-neutral-300 bg-white px-2 py-1 text-sm text-neutral-900 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/30 disabled:cursor-not-allowed disabled:opacity-50"
+        className={`${FIELD_CLASS} pl-2.5 pr-1 disabled:cursor-not-allowed disabled:opacity-50`}
       >
         <option value="" disabled>
           {available.length === 0 ? "All added" : placeholder}
@@ -61,7 +62,7 @@ function FilterDropdown<T extends string>({
           </option>
         ))}
       </select>
-    </div>
+    </>
   );
 }
 
@@ -88,8 +89,8 @@ export function IncidentFilters({
   const hasTags = status.length > 0 || severity.length > 0;
 
   return (
-    <div className="flex flex-col gap-3">
-      <div className="flex flex-wrap items-end gap-3">
+    <div className="flex flex-col gap-2">
+      <div className="flex flex-wrap items-center gap-1.5">
         <FilterDropdown
           id="status-filter"
           label="Status"
@@ -108,38 +109,39 @@ export function IncidentFilters({
           onAdd={(value) => onSeverityChange([...severity, value])}
         />
 
-        <div className="flex flex-col gap-1">
-          <label htmlFor="service-filter" className="text-xs font-medium text-neutral-500">
-            Service
-          </label>
-          <select
-            id="service-filter"
-            value={service}
-            onChange={(e) => onServiceChange(e.target.value)}
-            className="rounded-md border border-neutral-300 bg-white px-2 py-1 text-sm text-neutral-900 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/30"
-          >
-            <option value="">All services</option>
-            {servicesQuery.data?.items.map((svc) => (
-              <option key={svc} value={svc}>
-                {svc}
-              </option>
-            ))}
-          </select>
-        </div>
+        <label htmlFor="service-filter" className="sr-only">
+          Service
+        </label>
+        <select
+          id="service-filter"
+          value={service}
+          onChange={(e) => onServiceChange(e.target.value)}
+          className={`${FIELD_CLASS} pl-2.5 pr-1`}
+        >
+          <option value="">All services</option>
+          {servicesQuery.data?.items.map((svc) => (
+            <option key={svc} value={svc}>
+              {svc}
+            </option>
+          ))}
+        </select>
 
         {hasActiveFilters && (
           <button
             type="button"
             onClick={onClearAll}
-            className="rounded-md px-2 py-1.5 text-xs font-medium text-blue-700 hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-500/30"
+            className="flex h-9 items-center rounded-md px-2 text-sm font-medium text-blue-700 hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-500/30"
           >
-            Clear all filters
+            Clear all
           </button>
         )}
       </div>
 
       {hasTags && (
-        <div className="flex flex-wrap items-center gap-1.5" aria-label="Active filters">
+        <div
+          className="flex flex-wrap items-center gap-1.5 border-t border-neutral-100 pt-2"
+          aria-label="Active filters"
+        >
           {status.map((s) => (
             <FilterTag
               key={`status-${s}`}

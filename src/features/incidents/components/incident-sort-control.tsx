@@ -2,6 +2,7 @@
 
 import { ArrowDown, ArrowUp } from "lucide-react";
 import type { SortField, SortOrder } from "../types";
+import { FIELD_CLASS } from "./field-styles";
 
 const SORT_OPTIONS: { value: SortField; label: string }[] = [
   { value: "updatedAt", label: "Last updated" },
@@ -19,15 +20,15 @@ export function IncidentSortControl({
   onChange: (sort: SortField, order: SortOrder) => void;
 }) {
   return (
-    <div className="flex items-center gap-2">
-      <label htmlFor="sort-field" className="text-xs font-medium text-neutral-500">
+    <div className="flex items-center gap-1.5">
+      <label htmlFor="sort-field" className="sr-only">
         Sort by
       </label>
       <select
         id="sort-field"
         value={sort}
         onChange={(e) => onChange(e.target.value as SortField, order)}
-        className="rounded-md border border-neutral-300 bg-white px-2 py-1 text-sm text-neutral-900 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/30"
+        className={`${FIELD_CLASS} pl-2.5 pr-1`}
       >
         {SORT_OPTIONS.map((opt) => (
           <option key={opt.value} value={opt.value}>
@@ -39,14 +40,14 @@ export function IncidentSortControl({
         type="button"
         onClick={() => onChange(sort, order === "asc" ? "desc" : "asc")}
         aria-label={order === "asc" ? "Sort ascending, click for descending" : "Sort descending, click for ascending"}
-        className="inline-flex items-center gap-1 rounded-md border border-neutral-300 bg-white px-2 py-1 text-sm text-neutral-700 hover:bg-neutral-50 focus:outline-none focus:ring-2 focus:ring-blue-500/30"
+        title={order === "asc" ? "Ascending" : "Descending"}
+        className={`${FIELD_CLASS} flex w-9 items-center justify-center text-neutral-600 hover:bg-neutral-50`}
       >
         {order === "asc" ? (
-          <ArrowUp aria-hidden="true" className="h-3.5 w-3.5" />
+          <ArrowUp aria-hidden="true" className="h-4 w-4" />
         ) : (
-          <ArrowDown aria-hidden="true" className="h-3.5 w-3.5" />
+          <ArrowDown aria-hidden="true" className="h-4 w-4" />
         )}
-        {order === "asc" ? "Ascending" : "Descending"}
       </button>
     </div>
   );

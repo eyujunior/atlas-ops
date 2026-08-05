@@ -2,6 +2,7 @@
 
 import { Search, X } from "lucide-react";
 import { useRef, useState } from "react";
+import { FIELD_CLASS } from "./field-styles";
 
 const DEBOUNCE_MS = 300;
 
@@ -51,7 +52,7 @@ export function IncidentSearchInput({
         value={draft}
         onChange={(e) => handleChange(e.target.value)}
         placeholder="Search by ID, title, service, or assignee…"
-        className="w-full rounded-md border border-neutral-300 bg-white py-2 pl-9 pr-9 text-sm text-neutral-900 placeholder:text-neutral-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/30"
+        className={`${FIELD_CLASS} w-full pl-9 pr-9 placeholder:text-neutral-400`}
       />
       {draft && (
         <button
