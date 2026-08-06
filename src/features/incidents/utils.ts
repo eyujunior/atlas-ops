@@ -35,3 +35,10 @@ export function formatDateTime(iso: string): string {
   if (Number.isNaN(date.getTime())) return "Unknown date";
   return dateTimeFormatter.format(date);
 }
+
+/** "triggered" -> "Triggered". For interpolating enum values into
+ * sentences (button labels, toast copy) where a CSS capitalize class
+ * isn't an option. */
+export function capitalize(word: string): string {
+  return word.length === 0 ? word : word.charAt(0).toUpperCase() + word.slice(1);
+}

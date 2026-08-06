@@ -5,6 +5,19 @@
   --font-mono: var(--font-geist-mono);
 }
 
+@layer base {
+  /* Browsers default <button> to cursor: default, not pointer — only
+     <a> gets a pointer cursor for free. Every button and Radix trigger
+     in this app (they all render as <button> under the hood) needs
+     this, so it's a global base rule instead of a class repeated on
+     dozens of individual components. Disabled buttons keep their own
+     cursor (usually not-allowed, set per-component where relevant). */
+  button:not(:disabled),
+  [role="button"]:not([aria-disabled="true"]) {
+    cursor: pointer;
+  }
+}
+
 /* Referenced via Tailwind's arbitrary animate-[...] syntax (e.g. in
    components/ui/toast.tsx) rather than pulling in tailwindcss-animate
    for two small keyframes. */

@@ -13,7 +13,7 @@ const ALL_SERVICES_VALUE = "__all__";
 
 function FilterTag({ label, onRemove }: { label: string; onRemove: () => void }) {
   return (
-    <span className="inline-flex items-center gap-1 rounded-full bg-blue-50 py-1 pl-2.5 pr-1 text-xs font-medium text-blue-700 ring-1 ring-inset ring-blue-600/20">
+    <span className="inline-flex items-center gap-1 rounded-full bg-blue-50 py-1 pl-2.5 pr-1 text-xs font-medium capitalize text-blue-700 ring-1 ring-inset ring-blue-600/20">
       {label}
       <button
         type="button"
@@ -63,7 +63,7 @@ function FilterDropdown<T extends string>({
         </SelectTrigger>
         <SelectContent>
           {available.map((option) => (
-            <SelectItem key={option} value={option}>
+            <SelectItem key={option} value={option} className="capitalize">
               {option}
             </SelectItem>
           ))}
