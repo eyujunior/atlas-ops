@@ -44,6 +44,36 @@ function invalidateIncidentLists(queryClient: ReturnType<typeof useQueryClient>)
   });
 }
 
+/**
+ * Writes a confirmed field patch directly into every cached list page/
+ * filter combination that currently contains this incident, rather than
+ * just invalidating and waiting for a background refetch. invalidate +
+ * refetch alone leaves a real gap — the refetch has to complete a full
+ * network round trip (200–1200ms simulated latency here) before the list
+ * reflects the change, so closing the detail view right after a mutation
+ * shows stale data for up to ~1-2s. This makes the list consistent in
+ * the same tick as the mutation's success, with invalidation kept as a
+ * background safety net for anything this patch doesn't cover.
+ */
+function patchIncidentInLists(
+  queryClient: ReturnType<typeof useQueryClient>,
+  id: string,
+  patch: Partial<Incident>,
+) {
+  queryClient.setQueriesData<IncidentListResponse>(
+    {
+      predicate: (query) => query.queryKey[0] === "incidents" && query.queryKey[1] === "list",
+    },
+    (old) => {
+      if (!old) return old;
+      return {
+        ...old,
+        items: old.items.map((item) => (item.id === id ? { ...item, ...patch } : item)),
+      };
+    },
+  );
+}
+
 export function useCreateIncidentMutation() {
   const queryClient = useQueryClient();
   return useMutation<Incident, ApiClientError, CreateIncidentPayload>({
@@ -77,12 +107,21 @@ export function useUpdateStatusMutation(id: string) {
       }
       return { previous };
     },
+    onSuccess: (result) => {
+      queryClient.setQueryData<Incident>(detailKey, (old) =>
+        old ? { ...old, status: result.status, updatedAt: result.updatedAt, version: result.version } : old,
+      );
+      patchIncidentInLists(queryClient, id, { status: result.status, updatedAt: result.updatedAt });
+    },
     onError: (_err, _vars, context) => {
       if (context?.previous) {
         queryClient.setQueryData(detailKey, context.previous);
       }
     },
     onSettled: () => {
+      // Background safety net (e.g. reconciling anything a concurrent
+      // change touched) — the onSuccess patch above already makes the UI
+      // correct immediately, so this isn't what the user waits on.
       queryClient.invalidateQueries({ queryKey: detailKey });
       invalidateIncidentLists(queryClient);
     },
@@ -111,6 +150,13 @@ export function useUpdateAssigneeMutation(id: string) {
         });
       }
       return { previous };
+    },
+    onSuccess: (updatedIncident) => {
+      queryClient.setQueryData<Incident>(detailKey, updatedIncident);
+      patchIncidentInLists(queryClient, id, {
+        assignee: updatedIncident.assignee,
+        updatedAt: updatedIncident.updatedAt,
+      });
     },
     onError: (_err, _vars, context) => {
       if (context?.previous) {
