@@ -1,4 +1,7 @@
+"use client";
+
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import type { Incident } from "@/lib/types";
 import { SeverityBadge } from "./severity-badge";
 import { StatusBadge } from "./status-badge";
@@ -8,11 +11,20 @@ import { formatDateTime, formatRelativeTime } from "../utils";
  * A single Link, absolutely positioned to cover the entire row/card
  * ("stretched link" pattern) — one Tab stop per incident with a
  * descriptive accessible name, rather than one stop per cell.
+ *
+ * `search` carries the list's current query string (search/filter/sort/
+ * page) onto the detail URL. The intercepted modal route still changes
+ * the actual browser URL to /incidents/[id] — there's only one canonical
+ * URL for the whole page in the App Router, not a separate one per
+ * rendered slot — so without this, the still-mounted list's own
+ * useSearchParams() would read that new, filter-less URL and silently
+ * reset to its defaults while the modal was open.
  */
-function RowLink({ incident }: { incident: Incident }) {
+function RowLink({ incident, search }: { incident: Incident; search: string }) {
+  const href = search ? `/incidents/${incident.id}?${search}` : `/incidents/${incident.id}`;
   return (
     <Link
-      href={`/incidents/${incident.id}`}
+      href={href}
       aria-label={`Open incident ${incident.id}: ${incident.title}`}
       // No base `outline-none` here: Tailwind's outline-none also resets
       // the --tw-outline-style variable that outline-2 reads via var(),
@@ -32,6 +44,8 @@ function AssigneeCell({ incident }: { incident: Incident }) {
 }
 
 export function IncidentTable({ incidents }: { incidents: Incident[] }) {
+  const search = useSearchParams().toString();
+
   return (
     <>
       {/* Desktop: real table markup (valid thead/tbody/th/td structure). */}
@@ -51,7 +65,7 @@ export function IncidentTable({ incidents }: { incidents: Incident[] }) {
           {incidents.map((incident) => (
             <tr key={incident.id} className="relative hover:bg-neutral-50">
               <td className="px-3 py-3 font-mono text-xs text-neutral-500">
-                <RowLink incident={incident} />
+                <RowLink incident={incident} search={search} />
                 {incident.id}
               </td>
               <td className="max-w-xs truncate px-3 py-3 font-medium text-neutral-900">
@@ -79,7 +93,7 @@ export function IncidentTable({ incidents }: { incidents: Incident[] }) {
       <ul className="divide-y divide-neutral-100 md:hidden">
         {incidents.map((incident) => (
           <li key={incident.id} className="relative p-3">
-            <RowLink incident={incident} />
+            <RowLink incident={incident} search={search} />
             <div className="flex items-start justify-between gap-2">
               <span className="font-mono text-xs text-neutral-500">{incident.id}</span>
               <span
