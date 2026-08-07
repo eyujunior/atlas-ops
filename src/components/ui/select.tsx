@@ -1,7 +1,7 @@
 "use client";
 
 import * as SelectPrimitive from "@radix-ui/react-select";
-import { Check, ChevronDown } from "lucide-react";
+import { Check, ChevronDown, ChevronUp } from "lucide-react";
 import { forwardRef } from "react";
 
 /**
@@ -42,10 +42,24 @@ export const SelectContent = forwardRef<
       ref={ref}
       position={position}
       sideOffset={sideOffset}
-      className={`z-50 min-w-[var(--radix-select-trigger-width)] overflow-hidden rounded-lg border border-neutral-200 bg-white shadow-lg shadow-neutral-900/5 ${className}`}
+      // Cap the popover to the space Radix measures between the trigger
+      // and the viewport edge, and let the viewport scroll inside it.
+      // Without this a long list (e.g. the full assignee roster) grows
+      // past the window and gets clipped with no scroll container — which
+      // also breaks Radix scrolling the arrow-key-highlighted item into
+      // view, so keyboard navigation lands on rows you can't see.
+      className={`z-50 max-h-(--radix-select-content-available-height) min-w-(--radix-select-trigger-width) overflow-hidden rounded-lg border border-neutral-200 bg-white shadow-lg shadow-neutral-900/5 ${className}`}
       {...props}
     >
-      <SelectPrimitive.Viewport className="p-1">{children}</SelectPrimitive.Viewport>
+      <SelectPrimitive.ScrollUpButton className="flex h-6 items-center justify-center text-neutral-400">
+        <ChevronUp aria-hidden="true" className="h-3.5 w-3.5" />
+      </SelectPrimitive.ScrollUpButton>
+      <SelectPrimitive.Viewport className="max-h-(--radix-select-content-available-height) overflow-y-auto p-1">
+        {children}
+      </SelectPrimitive.Viewport>
+      <SelectPrimitive.ScrollDownButton className="flex h-6 items-center justify-center text-neutral-400">
+        <ChevronDown aria-hidden="true" className="h-3.5 w-3.5" />
+      </SelectPrimitive.ScrollDownButton>
     </SelectPrimitive.Content>
   </SelectPrimitive.Portal>
 ));
