@@ -20,7 +20,7 @@ export default async function IncidentDetailPage({
     <div className="mx-auto max-w-6xl p-4 sm:p-6">
       <Link
         href="/incidents"
-        className="inline-flex items-center gap-1.5 rounded-md px-2 py-1 text-sm font-medium text-neutral-600 hover:bg-neutral-100 focus:outline-none focus-visible:outline-2 focus-visible:outline-blue-600"
+        className="inline-flex items-center gap-1.5 rounded-md px-2 py-1 text-sm font-medium text-neutral-600 hover:bg-neutral-100 focus-visible:outline-2 focus-visible:outline-blue-600"
       >
         <ArrowLeft aria-hidden="true" className="h-4 w-4" />
         Back to incidents

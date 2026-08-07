@@ -19,7 +19,7 @@ function FilterTag({ label, onRemove }: { label: string; onRemove: () => void })
         type="button"
         onClick={onRemove}
         aria-label={`Remove ${label} filter`}
-        className="rounded-full p-0.5 hover:bg-blue-100 focus:outline-none focus-visible:outline-2 focus-visible:outline-blue-600"
+        className="rounded-full p-0.5 hover:bg-blue-100 focus-visible:outline-2 focus-visible:outline-blue-600"
       >
         <X aria-hidden="true" className="h-3 w-3" />
       </button>

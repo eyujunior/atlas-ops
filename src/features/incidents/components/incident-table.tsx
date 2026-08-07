@@ -25,6 +25,7 @@ function RowLink({ incident, search }: { incident: Incident; search: string }) {
   return (
     <Link
       href={href}
+      data-row-link-id={incident.id}
       aria-label={`Open incident ${incident.id}: ${incident.title}`}
       // No base `outline-none` here: Tailwind's outline-none also resets
       // the --tw-outline-style variable that outline-2 reads via var(),
@@ -33,6 +34,34 @@ function RowLink({ incident, search }: { incident: Incident; search: string }) {
       className="absolute inset-0 z-10 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-blue-600"
     />
   );
+}
+
+/**
+ * Focuses the row link for a given incident when the detail modal closes.
+ * Radix's own auto-focus-return normally handles this by remembering
+ * whatever was focused before the dialog opened, but that capture is
+ * unreliable here: the modal opens via a route navigation (an intercepted
+ * route), not a literal Dialog.Trigger click, so by the time the dialog's
+ * focus scope activates, focus has often already fallen back to <body>
+ * across that async transition. Since we already know exactly which
+ * incident we're returning to (it's in the URL), we can just look its row
+ * up deterministically instead of depending on that capture.
+ *
+ * The same data-row-link-id appears twice in the DOM (desktop table row +
+ * mobile card — one is always display:none depending on viewport), so
+ * this picks whichever copy is actually rendered.
+ */
+export function focusIncidentRowLink(id: string) {
+  const candidates = document.querySelectorAll<HTMLElement>(`[data-row-link-id="${id}"]`);
+  for (const el of candidates) {
+    if (el.offsetParent !== null) {
+      el.focus();
+      return;
+    }
+  }
+  // The incident may no longer be on this page (e.g. a status change
+  // moved or filtered it out) — don't leave focus stranded on <body>.
+  document.getElementById("incident-search")?.focus();
 }
 
 function AssigneeCell({ incident }: { incident: Incident }) {

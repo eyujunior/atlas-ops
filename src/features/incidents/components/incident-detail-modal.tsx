@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { useIncidentQuery } from "../queries";
 import { IncidentDetailContent } from "./incident-detail-content";
+import { focusIncidentRowLink } from "./incident-table";
 
 /**
  * Rendered by the intercepted route (@modal/(.)[id]) when navigating here
@@ -26,7 +27,16 @@ export function IncidentDetailModal({ id }: { id: string }) {
         if (!open) router.back();
       }}
     >
-      <DialogContent className="w-[calc(100%-2rem)] max-w-2xl">
+      <DialogContent
+        className="w-[calc(100%-2rem)] max-w-2xl"
+        onCloseAutoFocus={(event) => {
+          // Radix's default auto-focus-return isn't reliable here since
+          // this dialog opens via route navigation, not a Dialog.Trigger
+          // click — see focusIncidentRowLink's own comment for why.
+          event.preventDefault();
+          focusIncidentRowLink(id);
+        }}
+      >
         {/* Visually hidden: IncidentDetailContent renders its own visible
             heading. Radix requires a Dialog.Title for accessibility
             regardless — this is it, kept in sync with the loaded data
