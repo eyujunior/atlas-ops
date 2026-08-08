@@ -5,8 +5,6 @@ import { X } from "lucide-react";
 import { forwardRef } from "react";
 
 export const Dialog = DialogPrimitive.Root;
-export const DialogTrigger = DialogPrimitive.Trigger;
-export const DialogClose = DialogPrimitive.Close;
 
 export const DialogOverlay = forwardRef<
   React.ElementRef<typeof DialogPrimitive.Overlay>,
@@ -22,12 +20,8 @@ DialogOverlay.displayName = "DialogOverlay";
 
 export const DialogContent = forwardRef<
   React.ElementRef<typeof DialogPrimitive.Content>,
-  React.ComponentPropsWithoutRef<typeof DialogPrimitive.Content> & {
-    /** Hides the default top-right close button (e.g. when the content
-     * provides its own). */
-    hideClose?: boolean;
-  }
->(({ className = "", children, hideClose, ...props }, ref) => (
+  React.ComponentPropsWithoutRef<typeof DialogPrimitive.Content>
+>(({ className = "", children, ...props }, ref) => (
   <DialogPrimitive.Portal>
     <DialogOverlay />
     <DialogPrimitive.Content
@@ -37,23 +31,20 @@ export const DialogContent = forwardRef<
       {...props}
     >
       {children}
-      {!hideClose && (
-        <DialogPrimitive.Close
-          aria-label="Close"
-          // No `focus:outline-none` here: it also resets the
-          // --tw-outline-style variable that outline-2 reads via var(),
-          // silently killing the focus-visible outline too — see the
-          // identical fix on RowLink in incident-table.tsx. outline's
-          // initial value is already none, so omitting it is enough.
-          className="absolute right-4 top-4 rounded-md p-1.5 text-neutral-400 hover:bg-neutral-100 hover:text-neutral-600 focus-visible:outline-2 focus-visible:outline-blue-600"
-        >
-          <X aria-hidden="true" className="h-4 w-4" />
-        </DialogPrimitive.Close>
-      )}
+      <DialogPrimitive.Close
+        aria-label="Close"
+        // No `focus:outline-none` here: it also resets the
+        // --tw-outline-style variable that outline-2 reads via var(),
+        // silently killing the focus-visible outline too — see the
+        // identical fix on RowLink in incident-table.tsx. outline's
+        // initial value is already none, so omitting it is enough.
+        className="absolute right-4 top-4 rounded-md p-1.5 text-neutral-400 hover:bg-neutral-100 hover:text-neutral-600 focus-visible:outline-2 focus-visible:outline-blue-600"
+      >
+        <X aria-hidden="true" className="h-4 w-4" />
+      </DialogPrimitive.Close>
     </DialogPrimitive.Content>
   </DialogPrimitive.Portal>
 ));
 DialogContent.displayName = "DialogContent";
 
 export const DialogTitle = DialogPrimitive.Title;
-export const DialogDescription = DialogPrimitive.Description;

@@ -24,10 +24,7 @@ import {
  * exercise failure paths do so explicitly via the X-Mock-Failure /
  * X-Mock-Conflict headers, which work regardless of this flag.
  */
-export let chaosEnabled = process.env.NODE_ENV !== "test";
-export function setChaosEnabled(value: boolean) {
-  chaosEnabled = value;
-}
+const chaosEnabled = process.env.NODE_ENV !== "test";
 
 const RANDOM_FAILURE_RATE = 0.05;
 

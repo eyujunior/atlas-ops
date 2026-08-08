@@ -118,17 +118,6 @@ export function useIncidentListParams() {
     [pathname, router],
   );
 
-  const clearFilter = useCallback(
-    (key: "status" | "severity" | "service") => {
-      if (key === "service") {
-        setParams({ service: "" });
-      } else {
-        setParams({ [key]: [] });
-      }
-    },
-    [setParams],
-  );
-
   const clearAllFilters = useCallback(() => {
     setParams({ status: [], severity: [], service: "", q: "" });
   }, [setParams]);
@@ -139,5 +128,5 @@ export function useIncidentListParams() {
     Boolean(params.service) ||
     Boolean(params.q);
 
-  return { params, setParams, clearFilter, clearAllFilters, hasActiveFilters };
+  return { params, setParams, clearAllFilters, hasActiveFilters };
 }

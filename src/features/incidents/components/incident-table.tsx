@@ -78,7 +78,10 @@ export function IncidentTable({ incidents }: { incidents: Incident[] }) {
   return (
     <>
       {/* Desktop: real table markup (valid thead/tbody/th/td structure). */}
-      <table className="hidden w-full text-left text-sm md:table">
+      {/* Table appears at lg, not md: with seven columns it needs ~900px,
+          so switching at md (768px) pushed the page into horizontal
+          overflow on tablet widths. Cards carry 768px instead. */}
+      <table className="hidden w-full text-left text-sm lg:table">
         <thead>
           <tr className="border-b border-neutral-200 text-xs font-medium text-neutral-500">
             <th scope="col" className="px-3 py-2 font-medium">ID</th>
@@ -119,7 +122,7 @@ export function IncidentTable({ incidents }: { incidents: Incident[] }) {
       </table>
 
       {/* Mobile / narrow: card list. */}
-      <ul className="divide-y divide-neutral-100 md:hidden">
+      <ul className="divide-y divide-neutral-100 lg:hidden">
         {incidents.map((incident) => (
           <li key={incident.id} className="relative p-3">
             <RowLink incident={incident} search={search} />
