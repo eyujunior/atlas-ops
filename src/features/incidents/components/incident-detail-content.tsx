@@ -85,7 +85,11 @@ export function IncidentDetailContent({
 
   if (query.isError) {
     return (
-      <ErrorState message={query.error.userMessage} onRetry={() => query.refetch()} />
+      <ErrorState
+        title="Couldn't load this incident"
+        message={query.error.userMessage}
+        onRetry={() => query.refetch()}
+      />
     );
   }
 

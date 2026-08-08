@@ -50,9 +50,13 @@ export function NoResultsState({ onClearFilters }: { onClearFilters: () => void 
 export function ErrorState({
   message,
   onRetry,
+  title = "Couldn't load incidents",
 }: {
   message: string;
   onRetry: () => void;
+  /** Defaults to the list wording; the detail view overrides it so a
+   * single incident's failure doesn't read as a list failure. */
+  title?: string;
 }) {
   return (
     <div
@@ -60,7 +64,7 @@ export function ErrorState({
       className="flex flex-col items-center gap-2 px-6 py-16 text-center"
     >
       <AlertTriangle aria-hidden="true" className="h-8 w-8 text-red-400" />
-      <p className="text-sm font-medium text-neutral-700">Couldn&apos;t load incidents</p>
+      <p className="text-sm font-medium text-neutral-700">{title}</p>
       <p className="max-w-sm text-sm text-neutral-500">{message}</p>
       <button
         type="button"
