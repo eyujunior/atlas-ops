@@ -25,7 +25,11 @@ export function IncidentListView() {
           </p>
         </div>
         <Link
-          href="/incidents/new"
+          // Deliberately not /incidents/new: the detail modal's intercepting
+          // route ((.)[id]) matches any single segment under /incidents, so
+          // "new" gets captured as an incident ID and the create page can
+          // never render. Detail URLs stay clean at /incidents/INC-1234.
+          href="/new-incident"
           className="inline-flex items-center gap-1.5 rounded-md bg-blue-600 px-3 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500/40"
         >
           <Plus aria-hidden="true" className="h-4 w-4" />
