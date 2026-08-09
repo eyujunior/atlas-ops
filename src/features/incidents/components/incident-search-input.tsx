@@ -1,7 +1,7 @@
 "use client";
 
 import { Search, X } from "lucide-react";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { FIELD_CLASS } from "./field-styles";
 
 const DEBOUNCE_MS = 300;
@@ -15,6 +15,12 @@ export function IncidentSearchInput({
 }) {
   const [draft, setDraft] = useState(value);
   const [syncedValue, setSyncedValue] = useState(value);
+  // The last value this input pushed upward. `value` comes back through the
+  // URL and router.push doesn't commit synchronously, so an incoming value
+  // equal to this one is our own debounced change echoing back late, after
+  // further keystrokes may have landed. Adopting it would resurrect text the
+  // user has already deleted.
+  const [lastSent, setLastSent] = useState(value);
   const timerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
   // Stay in sync if the URL changes from elsewhere (back/forward nav,
@@ -22,17 +28,27 @@ export function IncidentSearchInput({
   // effect, so it doesn't cost an extra commit/paint cycle.
   if (value !== syncedValue) {
     setSyncedValue(value);
-    setDraft(value);
+    if (value !== lastSent) {
+      setLastSent(value);
+      setDraft(value);
+    }
   }
+
+  // A pending debounce would otherwise fire after unmount and navigate.
+  useEffect(() => () => clearTimeout(timerRef.current), []);
 
   function handleChange(next: string) {
     setDraft(next);
     clearTimeout(timerRef.current);
-    timerRef.current = setTimeout(() => onChange(next), DEBOUNCE_MS);
+    timerRef.current = setTimeout(() => {
+      setLastSent(next);
+      onChange(next);
+    }, DEBOUNCE_MS);
   }
 
   function handleClear() {
     clearTimeout(timerRef.current);
+    setLastSent("");
     setDraft("");
     onChange("");
   }

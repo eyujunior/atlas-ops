@@ -172,7 +172,7 @@ computed `outline` styles, `:focus-visible` matching, focus-trap traversal and
 
 ## 7. Testing
 
-**34 tests, 6 files.** Vitest and Testing Library running against the real MSW
+**36 tests, 7 files.** Vitest and Testing Library running against the real MSW
 handlers, not a stubbed client, so they exercise genuine request and response
 paths.
 
@@ -232,6 +232,6 @@ response directly into both caches so the list and detail never disagree.
 worse failure mode (stateful serverless functions fragmenting across
 instances), but still a real limitation when evaluating the deployed app.
 
-**Would improve with more time:** the 34 tests target the highest-risk paths
+**Would improve with more time:** the 36 tests target the highest-risk paths
 on purpose, but sorting, pagination and dialog focus management are verified
 manually rather than in the committed suite.
